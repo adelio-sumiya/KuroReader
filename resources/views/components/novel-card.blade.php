@@ -22,7 +22,7 @@
 
     <div class="p-4">
         <a href="{{ $url }}">
-            <h3 class="text-lg font-bold text-white line-clamp-2">{{ $title }}</h3>
+            <h3 class="text-lg font-bold text-black line-clamp-2">{{ $title }}</h3>
         </a>
 
         <p class="text-gray-400 text-sm mt-2 line-clamp-3">{{ $description }}</p>

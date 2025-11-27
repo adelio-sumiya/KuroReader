@@ -12,6 +12,20 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
+    public function libraries()
+    {
+        return $this->hasMany(UserLibrary::class);
+    }
+
+    public function readingHistories()
+    {
+        return $this->hasMany(ReadingHistory::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
     /**
      * The attributes that are mass assignable.
      *
