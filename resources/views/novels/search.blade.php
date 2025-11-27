@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container">
-    <h1 style="margin-bottom: 1rem;">🔍 Search Light Novels</h1>
+    <h1 style="margin-bottom: 1rem; color;">🔍 Search Light Novels</h1>
 
     <!-- Search Form -->
     <div class="card">
