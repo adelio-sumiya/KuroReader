@@ -32,9 +32,6 @@ class NovelApiService
         });
     }
     
-    /**
-     * Get novel detail by API ID
-     */
     public function getNovelDetail(int $apiId)
     {
         $cacheKey = "novel_detail_{$apiId}";
@@ -50,9 +47,7 @@ class NovelApiService
         });
     }
     
-    /**
-     * Get popular novels
-     */
+
     public function getPopularNovels(int $page = 1)
     {
         $cacheKey = "novels_popular_{$page}";

@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container">
-    <h1 style="margin-bottom: 2rem;">🔥 Popular Light Novels</h1>
+    <h1 style="margin-bottom: 2rem;">Popular Light Novels</h1>
 
     @if(isset($error))
         <div class="alert alert-error">{{ $error }}</div>
@@ -24,7 +24,7 @@
                         <div class="novel-card-body">
                             <h3>{{ $novel['title'] }}</h3>
                             <p style="font-size: 0.9rem; color: #666;">
-                                ⭐ {{ $novel['score'] ?? 'N/A' }}
+                                {{ $novel['score'] ?? 'N/A' }}
                             </p>
                         </div>
                     </div>
