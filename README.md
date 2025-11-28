@@ -51,13 +51,13 @@ php artisan key:generate
 Konfigurasi Database (SQLite) Buka file .env, hapus konfigurasi DB lama dan ubah menjadi:
 Ini, TOML
 
-DB_CONNECTION=sqlite
-# Hapus DB_HOST, DB_PORT, DB_DATABASE, dll.
-
-Lalu buat file database:
-Bash
-
-touch database/database.sqlite
+DB_CONNECTION=mysql
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=KuroReader
+DB_USERNAME=root
+DB_PASSWORD=
 
 Migrasi & Build
 Bash
