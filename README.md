@@ -1,59 +1,128 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+Light Novel Reader
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Platform manajemen koleksi Light Novel berbasis Web. Proyek ini memungkinkan pengguna membaca informasi, melacak progres membaca, dan mengelola koleksi novel pribadi menggunakan integrasi Jikan API (MyAnimeList). Dibangun sebagai Tugas Akhir menggunakan Laravel 11.
 
-## About Laravel
+⚡ Fitur Utama
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+    Integrasi API Eksternal: Mengambil data novel real-time dari Jikan API (MyAnimeList).
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+    Perpustakaan Pribadi: Kelola koleksi dengan status Ingin Dibaca, Sedang Dibaca, atau Selesai.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+    Reading History: Pelacakan otomatis chapter terakhir yang dibaca.
 
-## Learning Laravel
+    Sistem Review: Berikan rating dan komentar pada novel favorit.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+    Optimasi Performa: Implementasi Server-side Caching untuk meminimalisir rate limit API.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+🛠️ Tech Stack
 
-## Laravel Sponsors
+    Framework: Laravel 11.x
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+    Database: SQLite
 
-### Premium Partners
+    Auth: Laravel Breeze
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+    API: Jikan API v4
 
-## Contributing
+    Frontend: Blade Templates (Tailwind CSS Ready)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+🚀 Instalasi
 
-## Code of Conduct
+Pastikan Anda telah menginstal PHP >= 8.2, Composer, dan Node.js.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+    Clone Repository
+    Bash
 
-## Security Vulnerabilities
+git clone https://github.com/username/light-novel-reader.git
+cd light-novel-reader
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Install Dependencies
+Bash
 
-## License
+composer install
+npm install
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Setup Environment Salin file .env dan generate app key.
+Bash
+
+cp .env.example .env
+php artisan key:generate
+
+Konfigurasi Database (SQLite) Buka file .env, hapus konfigurasi DB lama dan ubah menjadi:
+Ini, TOML
+
+DB_CONNECTION=sqlite
+# Hapus DB_HOST, DB_PORT, DB_DATABASE, dll.
+
+Lalu buat file database:
+Bash
+
+touch database/database.sqlite
+
+Migrasi & Build
+Bash
+
+php artisan migrate
+npm run build
+
+Jalankan Server
+Bash
+
+    php artisan serve
+
+    Akses aplikasi di: http://localhost:8000
+
+🗄️ Skema Database & Arsitektur
+
+Aplikasi ini menggunakan pendekatan Hybrid Data Storage:
+
+    Lokal (SQLite): Menyimpan data User, Library Status, History Baca, dan Review.
+
+    Eksternal (API): Data detail novel (Judul, Sinopsis, Cover) diambil langsung dari Jikan API dan tidak disimpan permanen di database lokal untuk menghemat ruang dan memastikan data selalu up-to-date.
+
+Tabel Utama:
+
+    users: Autentikasi pengguna.
+
+    user_libraries: Menyimpan relasi user dengan novel (via ID API) dan status baca.
+
+    reading_histories: Mencatat timestamp dan chapter terakhir.
+
+    reviews: Menyimpan rating dan komentar user.
+
+🔌 API & Caching Strategy
+
+Aplikasi menggunakan Jikan API v4. Karena adanya Rate Limiting dari API, sistem caching diterapkan pada service layer:
+Tipe Data	Durasi Cache
+Search Results	1 Jam (3600s)
+Novel Details	1 Jam (3600s)
+Popular Novels	2 Jam (7200s)
+
+🛣️ Struktur Route
+
+    Public:
+    
+        GET / (Homepage/Popular)
+
+        GET /novels (Search & Detail)
+
+    User (Auth Required):
+
+        GET /library (Daftar koleksi)
+
+        POST /history (Update progress baca)
+
+        POST /reviews (Kirim review)
+
+🧪 Troubleshooting
+
+Masalah: "Database is locked" SQLite memiliki keterbatasan pada concurrent writes. Jika terjadi error ini, tambahkan konfigurasi berikut pada config/database.php di bagian koneksi sqlite:
+PHP
+
+'busy_timeout' => 5000,
+
+Masalah: API Rate Limit Jika data tidak muncul, kemungkinan IP terkena rate limit dari Jikan. Tunggu beberapa saat atau perpanjang durasi cache di NovelApiService.
+
+📄 Lisensi & Kredit
+
+Proyek ini dibuat untuk keperluan akademik (Tugas Akhir).
