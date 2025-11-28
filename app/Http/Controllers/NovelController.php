@@ -15,25 +15,20 @@ class NovelController extends Controller
         $this->apiService = $apiService;
     }
     
-    /**
-     * Display homepage with popular novels
-     */
     public function index()
     {
-        try {
+        // try {
             $novels = $this->apiService->getPopularNovels();
             return view('novels.index', compact('novels'));
-        } catch (\Exception $e) {
-            return view('novels.index', [
-                'novels' => [],
-                'error' => 'Failed to load novels. Please try again later.'
-            ]);
-        }
+        // } catch (\Exception $e) {
+        //     return view('novels.index', [
+        //         'novels' => [],
+        //         'error' => 'Failed to load novels. Please try again later.'
+        //     ]);
+        // }
     }
     
-    /**
-     * Search novels
-     */
+
     public function search(Request $request)
     {
         $query = $request->input('q', '');
@@ -57,9 +52,7 @@ class NovelController extends Controller
         }
     }
     
-    /**
-     * Show novel detail
-     */
+
     public function show($apiId)
     {
         try {

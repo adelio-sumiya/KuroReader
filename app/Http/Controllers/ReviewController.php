@@ -7,9 +7,6 @@ use Illuminate\Http\Request;
 
 class ReadingHistoryController extends Controller
 {
-    /**
-     * Update reading progress
-     */
     public function update(Request $request)
     {
         $validated = $request->validate([

@@ -6,26 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+
     public function up(): void
     {
-    Schema::create('reading_histories', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('user_id')->constrained()->onDelete('cascade');
-        $table->integer('novel_api_id');
-        $table->integer('last_chapter_read');
-        $table->timestamp('last_read_at');
-        $table->timestamps();
-        
-        $table->unique(['user_id', 'novel_api_id']);
+        Schema::create('user_libraries', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->integer('novel_api_id'); 
+            $table->enum('status', ['want_to_read', 'reading', 'completed']);
+            $table->timestamps();
+            
+
+            $table->unique(['user_id', 'novel_api_id']);
     });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         //
