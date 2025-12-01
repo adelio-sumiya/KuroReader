@@ -4,12 +4,23 @@ use App\Http\Controllers\NovelController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\ReadingHistoryController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 // Public Routes
 Route::get('/', [NovelController::class, 'index'])->name('home');
+Route::get('/novels/index', [NovelController::class, 'index'])->name('novels.index');
 Route::get('/novels', [NovelController::class, 'search'])->name('novels.search');
 Route::get('/novels/{apiId}', [NovelController::class, 'show'])->name('novels.show');
+
+// Simple Auth Routes
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
+
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
 // Protected Routes (requires authentication)
 Route::middleware(['auth'])->group(function () {
@@ -25,6 +36,6 @@ Route::middleware(['auth'])->group(function () {
     
     // Reviews
     Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
-    Route::put('/reviews/{id}', [ReviewController::class, 'update'])->name('reviews.update');
-    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
+    Route::put('/reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update');
+    Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
 });

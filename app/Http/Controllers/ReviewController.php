@@ -2,41 +2,67 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ReadingHistory;
+use App\Models\Review;
 use Illuminate\Http\Request;
 
-class ReadingHistoryController extends Controller
+class ReviewController extends Controller
 {
-    public function update(Request $request)
+    /**
+     * Store a new review for a novel.
+     */
+    public function store(Request $request)
     {
-        $validated = $request->validate([
-            'novel_api_id' => 'required|integer',
-            'last_chapter_read' => 'required|integer|min:1'
+        $data = $request->validate([
+            'novel_api_id' => ['required', 'integer'],
+            'rating' => ['required', 'integer', 'min:1', 'max:10'],
+            'comment' => ['nullable', 'string', 'max:2000'],
         ]);
-        
-        ReadingHistory::updateOrCreate(
+
+        Review::updateOrCreate(
             [
                 'user_id' => auth()->id(),
-                'novel_api_id' => $validated['novel_api_id']
+                'novel_api_id' => $data['novel_api_id'],
             ],
             [
-                'last_chapter_read' => $validated['last_chapter_read'],
-                'last_read_at' => now()
+                'rating' => $data['rating'],
+                'comment' => $data['comment'] ?? null,
             ]
         );
-        
-        return back()->with('success', 'Reading progress saved!');
+
+        return back()->with('success', 'Review saved!');
     }
-    
+
     /**
-     * Get reading history
+     * Update an existing review.
      */
-    public function index()
+    public function update(Request $request, Review $review)
     {
-        $histories = auth()->user()->readingHistories()
-            ->orderBy('last_read_at', 'desc')
-            ->get();
-        
-        return view('history.index', compact('histories'));
+        $this->authorizeReview($review);
+
+        $data = $request->validate([
+            'rating' => ['required', 'integer', 'min:1', 'max:10'],
+            'comment' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $review->update($data);
+
+        return back()->with('success', 'Review updated!');
+    }
+
+    /**
+     * Delete review.
+     */
+    public function destroy(Review $review)
+    {
+        $this->authorizeReview($review);
+
+        $review->delete();
+
+        return back()->with('success', 'Review removed.');
+    }
+
+    private function authorizeReview(Review $review): void
+    {
+        abort_if($review->user_id !== auth()->id(), 403);
     }
 }

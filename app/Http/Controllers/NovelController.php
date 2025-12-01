@@ -17,15 +17,15 @@ class NovelController extends Controller
     
     public function index()
     {
-        // try {
+        try {
             $novels = $this->apiService->getPopularNovels();
             return view('novels.index', compact('novels'));
-        // } catch (\Exception $e) {
-        //     return view('novels.index', [
-        //         'novels' => [],
-        //         'error' => 'Failed to load novels. Please try again later.'
-        //     ]);
-        // }
+        } catch (\Exception $e) {
+            return view('novels.index', [
+                'novels' => [],
+                'error' => 'Failed to load novels. Please try again later.'
+            ]);
+        }
     }
     
 
@@ -56,6 +56,7 @@ class NovelController extends Controller
     public function show($apiId)
     {
         try {
+            $apiId = (int) $apiId;
             $novel = $this->apiService->getNovelDetail($apiId);
             
             if (!$novel) {
