@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\NovelApiService;
 use Illuminate\Http\Request;
 use App\Models\Review;
+use App\Models\Chapter;
 
 class NovelController extends Controller
 {
@@ -90,6 +91,11 @@ class NovelController extends Controller
             
             // Calculate average rating
             $averageRating = $reviews->avg('rating');
+
+            // Uploaded chapters (admin-managed) for this novel
+            $chapters = Chapter::where('novel_api_id', $apiId)
+                ->orderBy('chapter_number')
+                ->get();
             
             return view('novels.show', compact(
                 'novel', 
@@ -97,7 +103,8 @@ class NovelController extends Controller
                 'userReview',
                 'readingHistory',
                 'reviews',
-                'averageRating'
+                'averageRating',
+                'chapters'
             ));
         } catch (\Exception $e) {
             abort(500, 'Failed to load novel details');

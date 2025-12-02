@@ -97,6 +97,49 @@
                 <p style="line-height: 1.6;">{{ $novel['synopsis'] ?? 'No synopsis available.' }}</p>
             </div>
 
+             <!-- Uploaded Chapters (Admin-managed) -->
+             <div class="card">
+                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                     <h2>📚 Uploaded Chapters</h2>
+                     @auth
+                         @if(auth()->user()->is_admin)
+                             <a href="{{ route('admin.chapters.index', $novel['mal_id']) }}" class="btn">
+                                 Manage Chapters
+                             </a>
+                         @endif
+                     @endauth
+                 </div>
+
+                 @if($chapters->isEmpty())
+                     <p style="color: #666;">No chapters uploaded yet.</p>
+                 @else
+                     <div style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; border-radius: 4px;">
+                         <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+                             <thead>
+                                 <tr style="background: #f9fafb;">
+                                     <th style="padding: 0.5rem; text-align: left;">#</th>
+                                     <th style="padding: 0.5rem; text-align: left;">Title</th>
+                                     <th style="padding: 0.5rem; text-align: right;">Read</th>
+                                 </tr>
+                             </thead>
+                             <tbody>
+                                 @foreach($chapters as $chapter)
+                                     <tr style="border-top: 1px solid #eee;">
+                                         <td style="padding: 0.5rem;">{{ $chapter->chapter_number }}</td>
+                                         <td style="padding: 0.5rem;">{{ $chapter->title }}</td>
+                                         <td style="padding: 0.5rem; text-align: right;">
+                                             <a href="{{ route('chapters.show', $chapter) }}" class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">
+                                                 Read
+                                             </a>
+                                         </td>
+                                     </tr>
+                                 @endforeach
+                             </tbody>
+                         </table>
+                     </div>
+                 @endif
+             </div>
+
             <!-- Review Section -->
             @auth
                 <div class="card">
