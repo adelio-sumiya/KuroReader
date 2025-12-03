@@ -3,216 +3,506 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Light Novel Reader')</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'KuroReader - Light Novel Platform')</title>
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body { 
-            font-family: Arial, sans-serif; 
-            background: #0d0f13;       /* NIGHT MODE BACKGROUND */
-            color: #e5e9ef;            /* Light text */
-            padding-bottom: 50px;
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        /* NAVIGATION */
-        nav { 
-            background: #111820;        /* Dark navy-black */
-            padding: 1rem 2rem; 
-            color: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.6);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+        :root {
+            --bg-primary: #0a0e13;
+            --bg-secondary: #131921;
+            --bg-tertiary: #1a2332;
+            --bg-hover: #232d3f;
+            --accent-primary: #4f46e5;
+            --accent-secondary: #818cf8;
+            --accent-tertiary: #a5b4fc;
+            --text-primary: #e8edf2;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-color: rgba(255, 255, 255, 0.05);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
         }
 
-        nav .container {
-            max-width: 1200px;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-bottom: 3rem;
+        }
+
+        /* ===== NAVIGATION ===== */
+        .main-nav {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+
+        .nav-container {
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 0.75rem 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 2rem;
         }
 
-        nav a { 
-            color: #e8edf5; 
-            text-decoration: none; 
-            margin-right: 20px;
-            transition: 0.2s;
-        }
-        nav a:hover { 
-            color: #4ea1ff;            /* Blue accent */
-        }
-
-        nav .logo { 
-            font-size: 1.5rem; 
-            font-weight: bold;
-        }
-
-        /* MAIN CONTAINER */
-        .container { 
-            max-width: 1200px; 
-            margin: 2rem auto; 
-            padding: 0 2rem;
-        }
-
-        /* ALERTS */
-        .alert { 
-            padding: 1rem; 
-            margin-bottom: 1rem; 
-            border-radius: 6px;
-        }
-
-        .alert-success { 
-            background: rgba(22, 60, 32, 0.8);
-            color: #c8f7d3;
-            border: 1px solid rgba(87, 165, 110, 0.5);
-        }
-
-        .alert-error { 
-            background: rgba(60, 22, 22, 0.8);
-            color: #ffd5d5;
-            border: 1px solid rgba(165, 87, 87, 0.4);
-        }
-
-        /* BUTTONS */
-        .btn { 
-            padding: 0.5rem 1rem; 
-            background: #2563eb;             /* Blue night accent */
-            color: white; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer;
+        /* Logo & Brand */
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
             text-decoration: none;
-            display: inline-block;
-            transition: 0.2s;
-            font-weight: bold;
-        }
-        .btn:hover { background: #1d4ed8; }
-
-        .btn-danger { background: #e11d48; }
-        .btn-danger:hover { background: #be123c; }
-
-        .btn-secondary { background: #374151; }
-        .btn-secondary:hover { background: #4b5563; }
-
-        /* CARD */
-        .card { 
-            background: #151a20;
-            padding: 1.5rem; 
-            border-radius: 8px; 
-            margin-bottom: 1rem;
-            border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
         }
 
-        /* GRID */
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
-            gap: 1.5rem;
+        .nav-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: white;
         }
 
-        /* NOVEL CARD */
-        .novel-card {
-            background: #101418; 
+        .nav-logo-text {
+            font-size: 1.375rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Nav Links */
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex: 1;
+            margin-left: 2rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
             border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: 0.2s;
-        }
-        .novel-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .novel-card img {
-            width: 100%;
-            height: 280px;
-            object-fit: cover;
+        .nav-link:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
         }
 
-        .novel-card-body {
-            padding: 1rem;
+        .nav-link.active {
+            color: var(--accent-secondary);
+            background: rgba(79, 70, 229, 0.1);
         }
 
-        .novel-card h3 {
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
-            color: #e5e9ef;
+        /* Nav Actions */
+        .nav-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
         }
 
-        .novel-card p {
-            color: #9aa3ad;
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
         }
 
-        /* FORM INPUTS */
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: white;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-secondary);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        /* ===== ALERTS ===== */
+        .alerts-container {
+            max-width: 1400px;
+            margin: 1rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .alert {
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .alert-info {
+            background: rgba(79, 70, 229, 0.1);
+            border: 1px solid rgba(79, 70, 229, 0.3);
+            color: var(--accent-tertiary);
+        }
+
+        .alert ul {
+            list-style: none;
+            margin: 0;
+        }
+
+        .alert li {
+            margin-bottom: 0.25rem;
+        }
+
+        /* ===== FORMS ===== */
         input, select, textarea {
             width: 100%;
-            padding: 0.5rem;
+            padding: 0.75rem;
             margin: 0.5rem 0;
-            border-radius: 5px;
-            background: #0f1419;
-            border: 1px solid rgba(255,255,255,0.08);
-            color: #e5e9ef;
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: all 0.3s;
         }
-        input::placeholder {
-            color: #6b7280;
-        }
-        input:focus {
-            border-color: #2563eb;
+
+        input:focus, select:focus, textarea:focus {
             outline: none;
-            box-shadow: 0 0 0 4px rgba(37,99,235,0.2);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        input::placeholder {
+            color: var(--text-muted);
         }
 
         label {
-            font-weight: bold;
+            font-weight: 600;
             margin-bottom: 0.5rem;
             display: block;
-            color: #e5e9ef;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        /* ===== GRID ===== */
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        /* ===== CONTAINER ===== */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* ===== MOBILE MENU ===== */
+        .mobile-menu-btn {
+            display: none;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 65px;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+            z-index: 99;
+        }
+
+        .mobile-menu.active {
+            display: block;
+        }
+
+        .mobile-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            .nav-container {
+                padding: 0.75rem 1rem;
+            }
+
+            .nav-logo-text {
+                font-size: 1.125rem;
+            }
+
+            .nav-actions {
+                gap: 0.5rem;
+            }
+
+            .btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-logo {
+                width: 36px;
+                height: 36px;
+                font-size: 1.125rem;
+            }
+
+            .user-avatar {
+                width: 28px;
+                height: 28px;
+                font-size: 0.75rem;
+            }
         }
     </style>
 </head>
 
 <body>
     <!-- Navigation -->
-    <nav>
-        <div class="container">
-            <div>
-                <a href="/" class="logo"> KuroReader</a>
-                <a href="/">Home</a>
-                <a href="/novels">Search</a>
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <div class="nav-logo">K</div>
+                <span class="nav-logo-text">KuroReader</span>
+            </a>
+
+            <div class="nav-links">
+                <a href="/" class="nav-link {{ request()->is('/') ? 'active' : '' }}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    Home
+                </a>
+                <a href="/novels" class="nav-link {{ request()->is('novels*') ? 'active' : '' }}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    Browse
+                </a>
                 @auth
-                    <a href="/library">My Library</a>
-                    <a href="/history">History</a>
+                    <a href="/library" class="nav-link {{ request()->is('library*') ? 'active' : '' }}">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                        </svg>
+                        My Library
+                    </a>
+                    <a href="/history" class="nav-link {{ request()->is('history*') ? 'active' : '' }}">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        History
+                    </a>
                 @endauth
             </div>
 
-            <div>
+            <div class="nav-actions">
                 @auth
-                    <span style="margin-right: 1rem;">Hi, {{ auth()->user()->name }}!</span>
+                    <div class="nav-user">
+                        <span>{{ Str::limit(auth()->user()->name, 12) }}</span>
+                        <div class="user-avatar">
+                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                        </div>
+                    </div>
                     <form action="/logout" method="POST" style="display:inline;">
                         @csrf
-                        <button type="submit" class="btn btn-secondary">Logout</button>
+                        <button type="submit" class="btn btn-secondary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                            Logout
+                        </button>
                     </form>
                 @else
-                    <a href="/login" class="btn">Login</a>
-                    <a href="/register" class="btn">Register</a>
+                    <a href="/login" class="btn btn-secondary">Login</a>
+                    <a href="/register" class="btn btn-primary">Sign Up</a>
                 @endauth
             </div>
+
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
         </div>
     </nav>
 
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-nav-links">
+            <a href="/" class="nav-link {{ request()->is('/') ? 'active' : '' }}">Home</a>
+            <a href="/novels" class="nav-link {{ request()->is('novels*') ? 'active' : '' }}">Browse</a>
+            @auth
+                <a href="/library" class="nav-link {{ request()->is('library*') ? 'active' : '' }}">My Library</a>
+                <a href="/history" class="nav-link {{ request()->is('history*') ? 'active' : '' }}">History</a>
+            @endauth
+        </div>
+    </div>
+
     <!-- Flash Messages -->
-    <div class="container">
+    <div class="alerts-container">
         @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
+            <div class="alert alert-success">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                {{ session('success') }}
+            </div>
         @endif
         
         @if(session('error'))
-            <div class="alert alert-error">{{ session('error') }}</div>
+            <div class="alert alert-error">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+                {{ session('error') }}
+            </div>
         @endif
 
         @if($errors->any())
             <div class="alert alert-error">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
                 <ul>
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -224,5 +514,21 @@
 
     <!-- MAIN CONTENT -->
     @yield('content')
+
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('active');
+        }
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('mobileMenu');
+            const btn = document.querySelector('.mobile-menu-btn');
+            if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                menu.classList.remove('active');
+            }
+        });
+    </script>
 </body>
 </html>

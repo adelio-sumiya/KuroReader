@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use App\Service\NovelAPIService ;
+use App\Services\NovelAPIService ;
 
 
 class AppServiceProvider extends ServiceProvider
