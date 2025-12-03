@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use App\Models\Review;
 use App\Models\Chapter;
 
-
 class NovelController extends Controller
 {
     protected NovelApiService $apiService;

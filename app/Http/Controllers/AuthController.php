@@ -81,5 +81,3 @@ class AuthController extends Controller
         return redirect()->route('novels.index');
     }
 }
-
-
