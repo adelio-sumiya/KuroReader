@@ -6,6 +6,7 @@ use App\Services\NovelApiService;
 use Illuminate\Http\Request;
 use App\Models\Review;
 use App\Models\Chapter;
+use Illuminate\Support\Facades\Log;
 
 class NovelController extends Controller
 {
@@ -124,17 +125,24 @@ public function index()
             }
             
             // Get all unique genres from results for filter chips
-            $allGenres = collect($novels)
+        $allGenres = $this->apiService->getAllGenres();
+        
+        // Jika gagal, fallback
+        if (empty($allGenres)) {
+            $popularNovels = $this->apiService->getPopularNovels(1);
+            $allGenres = collect($popularNovels)
                 ->pluck('genres')
                 ->flatten(1)
                 ->unique('mal_id')
                 ->sortBy('name')
                 ->values()
                 ->all();
-            
+        }
+
             // If no genres found, get from popular novels
             if (empty($allGenres)) {
                 $popularNovels = $this->apiService->getPopularNovels(1);
+                
                 $allGenres = collect($popularNovels)
                     ->pluck('genres')
                     ->flatten(1)
@@ -178,20 +186,27 @@ public function index()
     }
     
     public function show($apiId)
-    {
+{
+    try {
+        $apiId = (int) $apiId;
+        
+        // Ambil data novel dari API
+        $novel = $this->apiService->getNovelDetail($apiId);
+        
+        if (!$novel) {
+            return back()->with('error', 'Novel not found');
+        }
+        
+        // Set default values
+        $libraryStatus = null;
+        $userReview = null;
+        $readingHistory = null;
+        $reviews = collect();
+        $averageRating = 0;
+        $chapters = collect();
+        
+        // COBA ambil data dari database, tapi JANGAN error kalau gagal
         try {
-            $apiId = (int) $apiId;
-            $novel = $this->apiService->getNovelDetail($apiId);
-            
-            if (!$novel) {
-                abort(404, 'Novel not found');
-            }
-            
-            // Get user's library status if authenticated
-            $libraryStatus = null;
-            $userReview = null;
-            $readingHistory = null;
-            
             if (auth()->check()) {
                 $libraryStatus = auth()->user()->libraries()
                     ->where('novel_api_id', $apiId)
@@ -206,31 +221,37 @@ public function index()
                     ->first();
             }
             
-            // Get all reviews for this novel
             $reviews = Review::where('novel_api_id', $apiId)
                 ->with('user')
                 ->latest()
                 ->get();
             
-            // Calculate average rating
-            $averageRating = $reviews->avg('rating');
+            $averageRating = $reviews->avg('rating') ?? 0;
 
-            // Uploaded chapters (admin-managed) for this novel
             $chapters = Chapter::where('novel_api_id', $apiId)
                 ->orderBy('chapter_number')
                 ->get();
-            
-            return view('novels.show', compact(
-                'novel', 
-                'libraryStatus', 
-                'userReview',
-                'readingHistory',
-                'reviews',
-                'averageRating',
-                'chapters'
-            ));
-        } catch (\Exception $e) {
-            abort(500, 'Failed to load novel details');
+                
+        } catch (\Exception $dbError) {
+            // Kalau database error, IGNORE saja
+            \Log::warning('Database query failed: ' . $dbError->getMessage());
         }
+        
+        // Tetap tampilkan halaman
+        return view('novels.show', compact(
+            'novel', 
+            'libraryStatus', 
+            'userReview',
+            'readingHistory',
+            'reviews',
+            'averageRating',
+            'chapters'
+        ));
+        
+    } 
+    catch (\Exception $e) {
+        Log::error('NovelController@show error: ' . $e->getMessage());
+        return back()->with('error', 'Failed to load novel: ' . $e->getMessage());
     }
+}
 }

@@ -44,6 +44,8 @@
                             @endif
                         </div>
                         
+{{--  --}}
+
                         <div class="hero-actions">
                             <a href="{{ route('novels.show', $novel['mal_id']) }}" class="btn-hero primary">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
