@@ -379,7 +379,11 @@ show.blade
             <div class="review-card-header">
                 <div class="reviewer-info">
                     <div class="reviewer-avatar">
-                        {{ strtoupper(substr($review->user->name, 0, 1)) }}
+                        @if($review->user->avatar)
+                            <img src="{{ $review->user->avatar_url }}" alt="{{ $review->user->name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        @else
+                            {{ strtoupper(substr($review->user->name, 0, 1)) }}
+                        @endif
                     </div>
                     <div class="reviewer-details">
                         <h4 class="reviewer-name">{{ $review->user->name }}</h4>

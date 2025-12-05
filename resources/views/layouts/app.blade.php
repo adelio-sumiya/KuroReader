@@ -445,17 +445,28 @@
                         </svg>
                         History
                     </a>
+                    <a href="/profile" class="nav-link {{ request()->is('profile*') ? 'active' : '' }}">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        Profile
+                    </a>
                 @endauth
             </div>
 
             <div class="nav-actions">
                 @auth
-                    <div class="nav-user">
+                    <a href="/profile" class="nav-user" style="text-decoration: none;">
                         <span>{{ Str::limit(auth()->user()->name, 12) }}</span>
                         <div class="user-avatar">
-                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                            @if(auth()->user()->avatar)
+                                <img src="{{ auth()->user()->avatar_url }}" alt="{{ auth()->user()->name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                            @else
+                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                            @endif
                         </div>
-                    </div>
+                    </a>
                     <form action="/logout" method="POST" style="display:inline;">
                         @csrf
                         <button type="submit" class="btn btn-secondary">
@@ -491,6 +502,7 @@
             @auth
                 <a href="/library" class="nav-link {{ request()->is('library*') ? 'active' : '' }}">My Library</a>
                 <a href="/history" class="nav-link {{ request()->is('history*') ? 'active' : '' }}">History</a>
+                <a href="/profile" class="nav-link {{ request()->is('profile*') ? 'active' : '' }}">Profile</a>
             @endauth
         </div>
     </div>
