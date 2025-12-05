@@ -270,6 +270,161 @@ show.blade
                 </div>
             @endif
         </div>
+
+@auth
+<div class="review-form-card">
+    <div class="review-form-header">
+        <h2 class="review-form-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            {{ $userReview ? 'Edit Your Review' : 'Write a Review' }}
+        </h2>
+    </div>
+
+    <form action="{{ $userReview ? route('reviews.update', $userReview) : route('reviews.store') }}" method="POST" class="review-form">
+        @csrf
+        @if($userReview)
+            @method('PUT')
+        @else
+            <input type="hidden" name="novel_api_id" value="{{ $novel['mal_id'] }}">
+        @endif
+        
+        <div class="rating-input-group">
+            <label class="rating-label">Your Rating</label>
+            <div class="star-rating-input">
+                @for($i = 1; $i <= 10; $i++)
+                <input type="radio" name="rating" value="{{ $i }}" id="star{{ $i }}" 
+                       {{ (old('rating', optional($userReview)->rating) == $i) ? 'checked' : '' }} required>
+                <label for="star{{ $i }}" class="star-label">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                </label>
+                @endfor
+            </div>
+            {{-- <span class="rating-value-display">Rating: <strong id="ratingValue">{{ old('rating', optional($userReview)->rating) ?? 5 }}</strong>/10</span> --}}
+        </div>
+        
+        <div class="comment-input-group">
+            <label class="comment-label">Your Thoughts</label>
+            <textarea name="comment" 
+                      rows="4" 
+                      class="comment-textarea"
+                      placeholder="Share your thoughts about this novel... What did you like or dislike?">{{ old('comment', optional($userReview)->comment) }}</textarea>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn-submit-review">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 11 12 14 22 4"></polyline>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                {{ $userReview ? 'Update Review' : 'Submit Review' }}
+            </button>
+
+            @if($userReview)
+            <form action="{{ route('reviews.destroy', $userReview) }}" method="POST" class="delete-form" onsubmit="return confirm('Are you sure you want to delete your review?');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn-delete-review">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    Delete
+                </button>
+            </form>
+            @endif
+        </div>
+    </form>
+</div>
+@endauth
+
+<!-- All Reviews Section -->
+<div class="reviews-section">
+    <div class="reviews-header">
+        <div class="reviews-title-wrapper">
+            <h2 class="reviews-title">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                User Reviews
+                <span class="review-count">{{ $reviews->count() }}</span>
+            </h2>
+        </div>
+        
+        @if($averageRating)
+        <div class="average-rating-box">
+            <div class="avg-rating-score">{{ number_format($averageRating, 1) }}</div>
+            <div class="avg-rating-stars">
+                @for($i = 1; $i <= 10; $i++)
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="{{ $i <= round($averageRating) ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                @endfor
+            </div>
+            <div class="avg-rating-text">Average Rating</div>
+        </div>
+        @endif
+    </div>
+
+    <div class="reviews-list">
+        @forelse($reviews as $review)
+        <div class="review-card">
+            <div class="review-card-header">
+                <div class="reviewer-info">
+                    <div class="reviewer-avatar">
+                        {{ strtoupper(substr($review->user->name, 0, 1)) }}
+                    </div>
+                    <div class="reviewer-details">
+                        <h4 class="reviewer-name">{{ $review->user->name }}</h4>
+                        <div class="review-meta">
+                            <span class="review-date">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                {{ $review->created_at->diffForHumans() }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="review-rating">
+                    <div class="rating-stars">
+                        @for($i = 1; $i <= 10; $i++)
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="{{ $i <= $review->rating ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                        @endfor
+                    </div>
+                    <span class="rating-number">{{ $review->rating }}/10</span>
+                </div>
+            </div>
+            
+            @if($review->comment)
+            <div class="review-comment">
+                <p>{{ $review->comment }}</p>
+            </div>
+            @endif
+        </div>
+        @empty
+        <div class="empty-reviews">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <h3>No Reviews Yet</h3>
+            <p>Be the first to share your thoughts about this novel!</p>
+        </div>
+        @endforelse
+    </div>
+</div>
+
+
     </div>
 </div>
 
@@ -794,6 +949,437 @@ show.blade
         grid-template-columns: 1fr;
     }
 }
+
+
+
+/* ===== REVIEW FORM CARD ===== */
+.review-form-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.review-form-header {
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(129, 140, 248, 0.1));
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem;
+}
+
+.review-form-title {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.review-form-title svg {
+    color: var(--accent-primary);
+}
+
+.review-form {
+    padding: 1.5rem;
+}
+
+/* ===== RATING INPUT ===== */
+.rating-input-group {
+    margin-bottom: 1.5rem;
+}
+
+.rating-label {
+    display: block;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+
+.star-rating-input {
+    display: flex;
+    gap: 0.5rem;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    margin-bottom: 0.75rem;
+}
+
+.star-rating-input input[type="radio"] {
+    display: none;
+}
+
+.star-label {
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-muted);
+}
+
+.star-label:hover,
+.star-label:hover ~ .star-label {
+    color: var(--warning);
+    transform: scale(1.1);
+}
+
+.star-rating-input input[type="radio"]:checked ~ .star-label {
+    color: var(--warning);
+}
+
+.rating-value-display {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.rating-value-display strong {
+    color: var(--warning);
+    font-size: 1.125rem;
+}
+
+/* ===== COMMENT INPUT ===== */
+.comment-input-group {
+    margin-bottom: 1.5rem;
+}
+
+.comment-label {
+    display: block;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.comment-textarea {
+    width: 100%;
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    resize: vertical;
+    transition: all 0.3s;
+    font-family: inherit;
+}
+
+.comment-textarea:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.comment-textarea::placeholder {
+    color: var(--text-muted);
+}
+
+/* ===== FORM ACTIONS ===== */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.delete-form {
+    display: inline-block;
+}
+
+.btn-submit-review {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    border: none;
+    padding: 0.875rem 1.75rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-submit-review:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(79, 70, 229, 0.3);
+}
+
+.btn-delete-review {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 0.875rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-delete-review:hover {
+    background: rgba(239, 68, 68, 0.2);
+    transform: translateY(-2px);
+}
+
+/* ===== REVIEWS SECTION ===== */
+.reviews-section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.reviews-header {
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.05), rgba(129, 140, 248, 0.05));
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.reviews-title-wrapper {
+    flex: 1;
+}
+
+.reviews-title {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.reviews-title svg {
+    color: var(--accent-primary);
+}
+
+.review-count {
+    background: var(--accent-primary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* ===== AVERAGE RATING BOX ===== */
+.average-rating-box {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    text-align: center;
+    min-width: 140px;
+}
+
+.avg-rating-score {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--warning);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.avg-rating-stars {
+    display: flex;
+    gap: 0.25rem;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    color: var(--warning);
+}
+
+.avg-rating-text {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+/* ===== REVIEWS LIST ===== */
+.reviews-list {
+    padding: 1.5rem;
+}
+
+.review-card {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s;
+}
+
+.review-card:hover {
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.review-card:last-child {
+    margin-bottom: 0;
+}
+
+.review-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.reviewer-info {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.reviewer-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.125rem;
+    flex-shrink: 0;
+}
+
+.reviewer-details {
+    flex: 1;
+}
+
+.reviewer-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.375rem;
+}
+
+.review-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.review-date {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.review-rating {
+    text-align: right;
+}
+
+.rating-stars {
+    display: flex;
+    gap: 0.25rem;
+    color: var(--warning);
+    margin-bottom: 0.375rem;
+}
+
+.rating-number {
+    display: block;
+    font-weight: 700;
+    color: var(--warning);
+    font-size: 1.125rem;
+}
+
+.review-comment {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.review-comment p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin: 0;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-reviews {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-reviews svg {
+    color: var(--text-muted);
+    opacity: 0.4;
+    margin-bottom: 1.5rem;
+}
+
+.empty-reviews h3 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.empty-reviews p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .review-form-header,
+    .reviews-header {
+        padding: 1.25rem;
+    }
+
+    .reviews-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .average-rating-box {
+        width: 100%;
+    }
+
+    .star-rating-input {
+        gap: 0.375rem;
+    }
+
+    .star-label svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .review-card-header {
+        flex-direction: column;
+    }
+
+    .review-rating {
+        text-align: left;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .btn-submit-review,
+    .btn-delete-review {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+
 </style>
 
 <script>
