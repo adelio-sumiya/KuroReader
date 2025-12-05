@@ -43,7 +43,7 @@
                                 <th style="padding: 0.5rem; text-align: left;">#</th>
                                 <th style="padding: 0.5rem; text-align: left;">Title</th>
                                 <th style="padding: 0.5rem; text-align: left;">Source</th>
-                                <th style="padding: 0.5rem; text-align: right;">Open</th>
+                                <th style="padding: 0.5rem; text-align: right;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -67,9 +67,21 @@
                                         {{ implode(' + ', $sources) }}
                                     </td>
                                     <td style="padding: 0.5rem; text-align: right;">
-                                        <a href="{{ route('chapters.show', $chapter) }}" class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">
-                                            View
-                                        </a>
+                                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                            <a href="{{ route('chapters.show', $chapter) }}" class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">
+                                                View
+                                            </a>
+                                            <a href="{{ route('admin.chapters.edit', [$apiId, $chapter]) }}" class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.85rem; background: #3b82f6;">
+                                                Edit
+                                            </a>
+                                            <form action="{{ route('admin.chapters.destroy', [$apiId, $chapter]) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this chapter?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.85rem; background: #dc2626;">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -81,7 +93,21 @@
 
         <!-- New chapter form -->
         <div class="card">
-            <h2 style="margin-bottom: 0.75rem;">Add / Update Chapter</h2>
+            <h2 style="margin-bottom: 0.75rem;">
+                @if(isset($editingChapter))
+                    Edit Chapter #{{ $editingChapter->chapter_number }}
+                @else
+                    Add / Update Chapter
+                @endif
+            </h2>
+
+            @if(isset($editingChapter))
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 4px;">
+                    <p style="margin: 0; color: #1e40af;">
+                        Editing: <strong>{{ $editingChapter->title }}</strong>
+                    </p>
+                </div>
+            @endif
 
             <form action="{{ route('admin.chapters.store', $apiId) }}" method="POST" enctype="multipart/form-data">
                 @csrf
@@ -92,7 +118,8 @@
                            name="chapter_number"
                            min="1"
                            class="form-control"
-                           value="{{ old('chapter_number') }}">
+                           value="{{ old('chapter_number', $editingChapter->chapter_number ?? '') }}"
+                           @if(isset($editingChapter)) readonly style="background: #f3f4f6;" @endif>
                     @error('chapter_number')
                         <div style="color: #b91c1c; font-size: 0.85rem;">{{ $message }}</div>
                     @enderror
@@ -103,7 +130,7 @@
                     <input type="text"
                            name="title"
                            class="form-control"
-                           value="{{ old('title') }}"
+                           value="{{ old('title', $editingChapter->title ?? '') }}"
                            required>
                     @error('title')
                         <div style="color: #b91c1c; font-size: 0.85rem;">{{ $message }}</div>
@@ -115,7 +142,7 @@
                     <textarea name="content"
                               rows="6"
                               class="form-control"
-                              placeholder="Paste or write chapter content here...">{{ old('content') }}</textarea>
+                              placeholder="Paste or write chapter content here...">{{ old('content', $editingChapter->content ?? '') }}</textarea>
                     @error('content')
                         <div style="color: #b91c1c; font-size: 0.85rem;">{{ $message }}</div>
                     @enderror
@@ -123,6 +150,18 @@
 
                 <div class="form-group" style="margin-bottom: 0.75rem;">
                     <label>Or Upload PDF / EPUB (optional)</label>
+                    @if(isset($editingChapter))
+                        <div style="margin-bottom: 0.5rem; padding: 0.5rem; background: #f9fafb; border-radius: 4px; font-size: 0.85rem;">
+                            @if($editingChapter->pdf_path)
+                                <p style="margin: 0;">Current: PDF file uploaded</p>
+                            @elseif($editingChapter->epub_path)
+                                <p style="margin: 0;">Current: EPUB file uploaded</p>
+                            @else
+                                <p style="margin: 0;">No file currently uploaded</p>
+                            @endif
+                            <p style="margin: 0.25rem 0 0; color: #666;">Upload a new file to replace the existing one.</p>
+                        </div>
+                    @endif
                     <input type="file"
                            name="chapter_pdf"
                            accept=".pdf,.epub,application/pdf,application/epub+zip">
@@ -134,9 +173,16 @@
                     @enderror
                 </div>
 
-                <button type="submit" class="btn">
-                    Save Chapter
-                </button>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="submit" class="btn">
+                        {{ isset($editingChapter) ? 'Update Chapter' : 'Save Chapter' }}
+                    </button>
+                    @if(isset($editingChapter))
+                        <a href="{{ route('admin.chapters.index', $apiId) }}" class="btn" style="background: #6b7280;">
+                            Cancel
+                        </a>
+                    @endif
+                </div>
             </form>
         </div>
     </div>

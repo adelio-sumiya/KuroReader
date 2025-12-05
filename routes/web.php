@@ -34,6 +34,8 @@ Route::middleware(['auth'])->group(function () {
     // Admin chapter management (simple is_admin check inside controller)
     Route::get('/admin/novels/{apiId}/chapters', [AdminChapterController::class, 'index'])->name('admin.chapters.index');
     Route::post('/admin/novels/{apiId}/chapters', [AdminChapterController::class, 'store'])->name('admin.chapters.store');
+    Route::get('/admin/novels/{apiId}/chapters/{chapter}/edit', [AdminChapterController::class, 'edit'])->name('admin.chapters.edit');
+    Route::delete('/admin/novels/{apiId}/chapters/{chapter}', [AdminChapterController::class, 'destroy'])->name('admin.chapters.destroy');
     // Library Management
     Route::get('/library', [LibraryController::class, 'index'])->name('library.index');
     Route::post('/library/add', [LibraryController::class, 'store'])->name('library.store');
