@@ -7,7 +7,7 @@
     <h1 style="margin-bottom: 1rem;">Admin: Manage Chapters</h1>
 
     <div class="card" style="margin-bottom: 1.5rem;">
-        <div style="display: flex; gap: 1rem;">
+        <div style="display: flex; gap: 1rem;">f
             <div style="width: 200px;">
                 <img src="{{ $novel['images']['jpg']['large_image_url'] ?? '' }}"
                      alt="{{ $novel['title'] ?? 'Novel' }}"
@@ -166,7 +166,7 @@
                            name="chapter_pdf"
                            accept=".pdf,.epub,application/pdf,application/epub+zip">
                     <p style="font-size: 0.85rem; color: #666; margin-top: 0.25rem;">
-                        If you upload a PDF, it will be viewable inline (with images) and optionally converted to text. EPUB files are stored and linked for reading or download.
+                        PDF files will be converted to HTML with text and images extracted. EPUB files will be converted to HTML for reading directly on the website. Content will be merged with any text you've entered above.
                     </p>
                     @error('chapter_pdf')
                         <div style="color: #b91c1c; font-size: 0.85rem;">{{ $message }}</div>

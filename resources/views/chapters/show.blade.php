@@ -35,34 +35,46 @@
             </div>
         </div>
 
-        @if($chapter->pdf_path)
-            <div style="margin-bottom: 1rem;">
-                <h3 style="margin-bottom: 0.5rem;">PDF Viewer</h3>
-                <div style="border: 1px solid #ddd; border-radius: 4px; overflow: hidden; height: 600px;">
-                    <iframe
-                        src="{{ asset('storage/' . $chapter->pdf_path) }}"
-                        style="width: 100%; height: 100%; border: none;"
-                    ></iframe>
-                </div>
-            </div>
-        @endif
-
-        @if($chapter->epub_path)
-            <div style="margin-bottom: 1rem;">
-                <h3 style="margin-bottom: 0.5rem;">EPUB File</h3>
-                <a href="{{ asset('storage/' . $chapter->epub_path) }}" class="btn" target="_blank">
-                    Open / Download EPUB
-                </a>
-            </div>
-        @endif
-
         @if($chapter->content)
-            <div id="chapter-content" style="line-height: 1.8; font-size: 1.02rem; margin-top: 1rem;">
+            <div id="chapter-content" style="line-height: 1.8; font-size: 1.02rem; margin-top: 1rem; max-width: 800px; margin-left: auto; margin-right: auto; padding: 2rem;">
                 {!! $chapter->content !!}
+            </div>
+        @else
+            <div style="padding: 2rem; text-align: center; color: #666;">
+                <p>No content available for this chapter.</p>
             </div>
         @endif
     </div>
 </div>
+
+<style>
+#chapter-content {
+    text-align: center;
+}
+
+#chapter-content p,
+#chapter-content div {
+    text-align: center;
+}
+
+#chapter-content .pdf-text,
+#chapter-content .epub-content,
+#chapter-content .pdf-page {
+    text-align: center;
+}
+
+#chapter-content img {
+    display: block;
+    margin: 1rem auto;
+    max-width: 100%;
+    height: auto;
+}
+
+#chapter-content .pdf-image {
+    text-align: center;
+    margin: 1.5rem 0;
+}
+</style>
 @endsection
 
 
