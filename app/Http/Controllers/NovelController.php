@@ -16,6 +16,68 @@ class NovelController extends Controller
         $this->apiService = $apiService;
     }
     
+    private function filterGenres($genres)
+    {
+        // Daftar genre yang harus dihapus (18+ dan tidak pantas)
+        $bannedGenres = [
+            'Erotica',
+            'Hentai',
+            'Ecchi',
+            'Adult',
+            'Henshin',
+            'Sexual Violence',
+            'Incest',
+            'Lolicon',
+            'Shotacon',
+            'Yaoi',
+            'Yuri',
+            'Harem',
+            'Reverse Harem',
+            'Love Polygon',
+            'Magical Sex Shift',
+            'Crossdressing',
+            'Gore',
+            'Horror',
+            'Violence',
+            'Psychological Horror',
+            'Torture',
+            'Drugs',
+            'Alcohol',
+            'Smoking',
+            'Nudity',
+            'Explicit',
+            'Mature',
+            'R18',
+            '18+',
+            '+18'
+        ];
+        
+        // Filter genre
+        $filteredGenres = array_filter($genres, function($genre) use ($bannedGenres) {
+            // Hapus genre yang ada di banned list
+            foreach ($bannedGenres as $banned) {
+                if (stripos($genre['name'], $banned) !== false) {
+                    return false;
+                }
+            }
+            return true;
+        });
+        
+        // Hapus duplikat berdasarkan name
+        $uniqueGenres = [];
+        $seen = [];
+        
+        foreach ($filteredGenres as $genre) {
+            $name = $genre['name'];
+            if (!in_array($name, $seen)) {
+                $seen[] = $name;
+                $uniqueGenres[] = $genre;
+            }
+        }
+        
+        return $uniqueGenres;
+    }
+    
     public function index()
     {
         try {
@@ -24,6 +86,9 @@ class NovelController extends Controller
             
             // Get genres for filter chips
             $allGenres = $this->apiService->getAllGenres();
+            
+            // Filter genres (remove 18+ and duplicates)
+            $filteredGenres = $this->filterGenres($allGenres);
             
             // First 5 novels for hero carousel
             $heroNovels = array_slice($allNovels, 0, 5);
@@ -66,7 +131,7 @@ class NovelController extends Controller
             return view('novels.index', [
                 'heroNovels' => $heroNovels,
                 'novels' => $allNovels,
-                'allGenres' => $allGenres,
+                'allGenres' => $filteredGenres, // Gunakan filtered genres
                 'topRated' => $topRated,
                 'mostFavorited' => $mostFavorited,
                 'mostActive' => $mostActive,
@@ -108,6 +173,9 @@ class NovelController extends Controller
             // Get all genres for filter chips
             $allGenres = $this->apiService->getAllGenres();
             
+            // Filter genres
+            $filteredGenres = $this->filterGenres($allGenres);
+            
             // Fetch novels based on search criteria
             if (!empty($selectedGenreId)) {
                 // Filter by genre
@@ -124,7 +192,7 @@ class NovelController extends Controller
                 'novels' => $novels,
                 'query' => $query,
                 'page' => $page,
-                'allGenres' => $allGenres,
+                'allGenres' => $filteredGenres, // Gunakan filtered genres
                 'selectedGenreId' => $selectedGenreId,
                 'selectedGenre' => $selectedGenre,
             ]);
@@ -150,6 +218,16 @@ class NovelController extends Controller
             
             if (!$novel) {
                 abort(404, 'Novel not found');
+            }
+            
+            // Filter genres pada novel detail
+            if (isset($novel['genres']) && is_array($novel['genres'])) {
+                $novel['genres'] = $this->filterGenres($novel['genres']);
+            }
+            
+            // Filter themes jika ada
+            if (isset($novel['themes']) && is_array($novel['themes'])) {
+                $novel['themes'] = $this->filterGenres($novel['themes']);
             }
             
             // Get user's library status if authenticated
@@ -196,6 +274,25 @@ class NovelController extends Controller
             ));
         } catch (\Exception $e) {
             abort(500, 'Failed to load novel details');
+        }
+    }
+    
+    // Method untuk mendapatkan genre yang aman untuk dropdown/filter
+    public function getSafeGenres()
+    {
+        try {
+            $allGenres = $this->apiService->getAllGenres();
+            $safeGenres = $this->filterGenres($allGenres);
+            
+            return response()->json([
+                'success' => true,
+                'genres' => $safeGenres
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load genres'
+            ], 500);
         }
     }
 }
