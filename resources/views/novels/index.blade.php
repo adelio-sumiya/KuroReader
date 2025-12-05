@@ -147,21 +147,6 @@
             </div>
         </div>
     </div>
-
-    <!-- ===== GENRE CHIPS ===== -->
-    @if(!empty($allGenres))
-    <div class="section genre-section">
-        <h2 class="section-title">Browse by Genre</h2>
-        <div class="genre-chips">
-            @foreach($allGenres as $genre)
-            <a href="{{ route('novels.search') }}?genre={{ $genre['mal_id'] }}" class="genre-chip">
-                {{ $genre['name'] }}
-            </a>
-            @endforeach
-        </div>
-    </div>
-    @endif
-
     <!-- ===== WEEKLY FEATURED ===== -->
     @if(!empty($weeklyFeatured))
     <div class="section">

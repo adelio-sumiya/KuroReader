@@ -144,7 +144,7 @@
                          </table>
                      </div>
                  @endif
-             </div>
+            </div>
 
             <!-- Review Section -->
             @auth
