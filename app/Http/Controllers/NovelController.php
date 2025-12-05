@@ -56,9 +56,11 @@ public function index()
                 ->pluck('genres')
                 ->flatten(1)
                 ->unique('mal_id')
+                ->sortBy('name')
                 ->take(15)
                 ->values()
                 ->all();
+
             
             return view('novels.index', compact(
                 'heroNovels',
@@ -148,7 +150,7 @@ public function index()
                     ->flatten(1)
                     ->unique('mal_id')
                     ->sortBy('name')
-                    ->take(20)
+                    ->take(30)
                     ->values()
                     ->all();
             }
@@ -206,52 +208,54 @@ public function index()
         $chapters = collect();
         
         // COBA ambil data dari database, tapi JANGAN error kalau gagal
-        try {
-            if (auth()->check()) {
-                $libraryStatus = auth()->user()->libraries()
-                    ->where('novel_api_id', $apiId)
-                    ->first();
+            try {
+                if (auth()->check()) {
+                    $libraryStatus = auth()->user()->libraries()
+                        ->where('novel_api_id', $apiId)
+                        ->first();
+                        
+                    $userReview = auth()->user()->reviews()
+                        ->where('novel_api_id', $apiId)
+                        ->first();
+                        
+                    $readingHistory = auth()->user()->readingHistories()
+                        ->where('novel_api_id', $apiId)
+                        ->first();
+                }
+                
+                // Get all reviews for this novel
+                $reviews = Review::where('novel_api_id', $apiId)
+                    ->with('user')
+                    ->latest()
+                    ->get();
+                
+                $averageRating = $reviews->avg('rating') ?? 0;
+
+                // Get all chapters for this novel
+                $chapters = Chapter::where('novel_api_id', $apiId)
+                    ->orderBy('chapter_number')
+                    ->get();
                     
-                $userReview = auth()->user()->reviews()
-                    ->where('novel_api_id', $apiId)
-                    ->first();
-                    
-                $readingHistory = auth()->user()->readingHistories()
-                    ->where('novel_api_id', $apiId)
-                    ->first();
+            } catch (\Exception $dbError) {
+                // Kalau database error, IGNORE saja
+                Log::warning('Database query failed: ' . $dbError->getMessage());
             }
             
-            $reviews = Review::where('novel_api_id', $apiId)
-                ->with('user')
-                ->latest()
-                ->get();
+            // Tetap tampilkan halaman
+            return view('novels.show', compact(
+                'novel', 
+                'libraryStatus', 
+                'userReview',
+                'readingHistory',
+                'reviews',
+                'averageRating',
+                'chapters'
+            ));
             
-            $averageRating = $reviews->avg('rating') ?? 0;
-
-            $chapters = Chapter::where('novel_api_id', $apiId)
-                ->orderBy('chapter_number')
-                ->get();
-                
-        } catch (\Exception $dbError) {
-            // Kalau database error, IGNORE saja
-            \Log::warning('Database query failed: ' . $dbError->getMessage());
-        }
-        
-        // Tetap tampilkan halaman
-        return view('novels.show', compact(
-            'novel', 
-            'libraryStatus', 
-            'userReview',
-            'readingHistory',
-            'reviews',
-            'averageRating',
-            'chapters'
-        ));
-        
-    } 
+        } 
     catch (\Exception $e) {
         Log::error('NovelController@show error: ' . $e->getMessage());
         return back()->with('error', 'Failed to load novel: ' . $e->getMessage());
     }
-}
+    }
 }
