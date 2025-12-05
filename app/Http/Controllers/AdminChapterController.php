@@ -49,6 +49,34 @@ class AdminChapterController extends Controller
     }
 
     /**
+     * Show edit form for a specific chapter.
+     */
+    public function edit(int $apiId, Chapter $chapter): View
+    {
+        $this->ensureAdmin();
+
+        if ($chapter->novel_api_id !== $apiId) {
+            abort(404, 'Chapter not found for this novel.');
+        }
+
+        $novel = $this->apiService->getNovelDetail($apiId);
+        if (! $novel) {
+            abort(404, 'Novel not found from API.');
+        }
+
+        $chapters = Chapter::where('novel_api_id', $apiId)
+            ->orderBy('chapter_number')
+            ->get();
+
+        return view('admin.chapters.index', [
+            'novel'         => $novel,
+            'apiId'         => $apiId,
+            'chapters'      => $chapters,
+            'editingChapter' => $chapter,
+        ]);
+    }
+
+    /**
      * Store a new chapter (text or PDF) for the given MAL / Jikan novel.
      */
     public function store(Request $request, int $apiId): RedirectResponse
@@ -70,15 +98,26 @@ class AdminChapterController extends Controller
             $data['chapter_number'] = $maxNumber ? $maxNumber + 1 : 1;
         }
 
-        $contentHtml = $data['content'] ?? null;
-        $pdfPath = null;
-        $epubPath = null;
+        // Check if chapter already exists to preserve existing data
+        $existingChapter = Chapter::where('novel_api_id', $apiId)
+            ->where('chapter_number', $data['chapter_number'])
+            ->first();
+
+        // Preserve existing content if not provided
+        $contentHtml = $data['content'] ?? ($existingChapter->content ?? null);
+        $pdfPath = $existingChapter->pdf_path ?? null;
+        $epubPath = $existingChapter->epub_path ?? null;
 
         if ($request->hasFile('chapter_pdf')) {
             $file = $request->file('chapter_pdf');
             $extension = strtolower($file->getClientOriginalExtension());
 
             if ($extension === 'pdf') {
+                // Delete old PDF if exists
+                if ($existingChapter && $existingChapter->pdf_path) {
+                    Storage::disk('public')->delete($existingChapter->pdf_path);
+                }
+
                 // Store original PDF (keeps images)
                 $pdfPath = $file->store('chapters_pdfs', 'public');
 
@@ -98,6 +137,11 @@ class AdminChapterController extends Controller
                     // If parsing fails, we still keep the PDF for inline viewing.
                 }
             } elseif ($extension === 'epub') {
+                // Delete old EPUB if exists
+                if ($existingChapter && $existingChapter->epub_path) {
+                    Storage::disk('public')->delete($existingChapter->epub_path);
+                }
+
                 // Store original EPUB file
                 $epubPath = $file->store('chapters_epub', 'public');
             }
@@ -120,6 +164,32 @@ class AdminChapterController extends Controller
         return redirect()
             ->route('admin.chapters.index', $apiId)
             ->with('status', 'Chapter saved successfully.');
+    }
+
+    /**
+     * Delete a chapter.
+     */
+    public function destroy(int $apiId, Chapter $chapter): RedirectResponse
+    {
+        $this->ensureAdmin();
+
+        if ($chapter->novel_api_id !== $apiId) {
+            abort(404, 'Chapter not found for this novel.');
+        }
+
+        // Delete associated files
+        if ($chapter->pdf_path) {
+            Storage::disk('public')->delete($chapter->pdf_path);
+        }
+        if ($chapter->epub_path) {
+            Storage::disk('public')->delete($chapter->epub_path);
+        }
+
+        $chapter->delete();
+
+        return redirect()
+            ->route('admin.chapters.index', $apiId)
+            ->with('status', 'Chapter deleted successfully.');
     }
 }
 
