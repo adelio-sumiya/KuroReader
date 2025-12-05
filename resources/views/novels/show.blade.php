@@ -1169,7 +1169,7 @@ function addToLibrary() {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred');
+            alert('Berhasil Ditambahkan' + 'ke Perpustakaan Anda!');
         });
     @else
         window.location.href = '/login';
