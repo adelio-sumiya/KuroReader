@@ -436,7 +436,7 @@
     inset: 0;
     background-size: cover;
     background-position: center;
-    filter: blur(6px) brightness(0.8);
+    /* filter: blur(6px) brightness(0.8); */
     transform: scale(1.05);
 }
 
@@ -444,6 +444,7 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(85deg, rgba(10, 14, 19, 0.95) 30%, rgba(10, 14, 19, 0.7) 50%, transparent 100%);
+    
 }
 
 .hero-content {
