@@ -1,12 +1,15 @@
 <?php
 
-use App\Http\Controllers\NovelController;
+use App\Http\Controllers\AdminChapterController;
+use App\Http\Controllers\Auth\EmailVerificationNotificationController;
+use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\LibraryController;
+use App\Http\Controllers\NovelController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReadingHistoryController;
 use App\Http\Controllers\ReviewController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\AdminChapterController;
-use App\Http\Controllers\ChapterController;
 use Illuminate\Support\Facades\Route;
 
 // Public Routes
@@ -41,13 +44,22 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/library/add', [LibraryController::class, 'store'])->name('library.store');
     Route::put('/library/{id}/status', [LibraryController::class, 'updateStatus'])->name('library.update');
     Route::delete('/library/{id}', [LibraryController::class, 'destroy'])->name('library.destroy');
-    
+
     // Reading History
     Route::post('/history', [ReadingHistoryController::class, 'update'])->name('history.update');
     Route::get('/history', [ReadingHistoryController::class, 'index'])->name('history.index');
-    
+
     // Reviews
     Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
     Route::put('/reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update');
     Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
+
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::put('/password', [PasswordController::class, 'update'])->name('password.update');
+
+    // Email Verification
+    Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])->name('verification.send');
 });
