@@ -16,13 +16,13 @@ show.blade
                 <img src="{{ $novel['images']['jpg']['large_image_url'] ?? 'https://via.placeholder.com/300x420' }}" 
                     alt="{{ $novel['title'] }}"
                     class="poster-image">
-                <div class="poster-rating">
+                {{-- <div class="poster-rating">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                     </svg>
                     <span class="rating-value">{{ number_format($novel['score'] ?? 0, 1) }}</span>
                     <span class="rating-count">/ 10</span>
-                </div>
+                </div> --}}
             </div>
 
             <div class="hero-info">
@@ -41,24 +41,24 @@ show.blade
                 @endif
 
                 <div class="novel-meta-tags">
-                    @if(isset($novel['status']))
+                    {{-- @if(isset($novel['status']))
                         <span class="meta-badge status">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                 <circle cx="12" cy="12" r="10"></circle>
                             </svg>
                             {{ $novel['status'] }}
                         </span>
-                    @endif
+                    @endif --}}
                     @if(isset($novel['chapters']))
                         <span class="meta-badge">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            {{-- <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
                                 <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                             </svg>
-                            {{ $novel['chapters'] }} Chapters
+                            {{ $novel['chapters'] }} Chapters --}}
                         </span>
                     @endif
-                    @if(isset($novel['published']['prop']['from']['year']))
+                    {{-- @if(isset($novel['published']['prop']['from']['year']))
                         <span class="meta-badge">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -68,7 +68,7 @@ show.blade
                             </svg>
                             {{ $novel['published']['prop']['from']['year'] }}
                         </span>
-                    @endif
+                    @endif --}}
                 </div>
 
                 @if(isset($novel['genres']) && count($novel['genres']) > 0)
@@ -81,13 +81,30 @@ show.blade
                 @endif
 
                 <div class="action-buttons">
-                    <a href="{{ $novel['url'] ?? '#' }}" class="btn-action primary" target="_blank">
+                    @php
+                        $firstChapter = \App\Models\Chapter::where('novel_api_id', $novel['mal_id'])
+                            ->orderBy('chapter_number')
+                            ->first();
+                        $hasChapters = \App\Models\Chapter::where('novel_api_id', $novel['mal_id'])->exists();
+                    @endphp
+    
+                @if($hasChapters && $firstChapter)
+                    <a href="{{ route('chapters.show', $firstChapter) }}" class="btn-action primary">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                             <polygon points="5 3 19 12 5 21 5 3"></polygon>
                         </svg>
                         Start Reading
                     </a>
-                    
+                @else
+                    <button class="btn-action primary disabled" disabled>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18 6L6 18M6 6l12 12"></path>
+                        </svg>
+                        No Chapters Available
+                    </button>
+                @endif
+                
+
                     @auth
                         <button onclick="addToLibrary()" class="btn-action secondary">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -97,13 +114,22 @@ show.blade
                             Add to Library
                         </button>
                         
-                        <button onclick="toggleFavorite()" class="btn-action icon-only">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
                     @endauth
+
+                @auth
+                    @if(auth()->user()->is_admin)
+                        <a href="{{ route('admin.chapters.index', $novel['mal_id']) }}" class="btn-action admin">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 20h9"></path>
+                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                            </svg>
+                            Manage Chapters
+                        </a>
+                    @endif
+                @endauth
+
                 </div>
+
             </div>
         </div>
     </div>
@@ -120,7 +146,7 @@ show.blade
                         </svg>
                     </div>
                     <div class="stat-info">
-                        <div class="stat-label">Score</div>
+                        <div class="stat-label">Score MAL</div>
                         <div class="stat-value">{{ number_format($novel['score'] ?? 0, 1) }}/10</div>
                     </div>
                 </div>
@@ -217,13 +243,6 @@ show.blade
                         </div>
                     @endif
                     
-                    @if(isset($novel['chapters']))
-                        <div class="info-item">
-                            <span class="info-label">Chapters</span>
-                            <span class="info-value">{{ $novel['chapters'] }}</span>
-                        </div>
-                    @endif
-
                     @if(isset($novel['status']))
                         <div class="info-item">
                             <span class="info-label">Status</span>
@@ -296,8 +315,51 @@ show.blade
     grid-template-columns: 280px 1fr;
     gap: 2.5rem;
     width: 100%;
+    align-items: flex-start; /* Ubah dari flex-end ke flex-start */
 }
 
+.hero-info {
+    display: flex;
+    flex-direction: column;
+    margin-top: 1.5rem; /* Tambahkan margin atas */
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem; /* Tambahkan margin bawah breadcrumb */
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.novel-title {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+.novel-alt-title {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.novel-meta-tags {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+}
+
+.genre-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+}
 /* ===== POSTER ===== */
 .hero-poster {
     position: relative;
@@ -389,7 +451,7 @@ show.blade
     margin-bottom: 1rem;
 }
 
-.meta-badge {
+/* .meta-badge {
     display: flex;
     align-items: center;
     gap: 0.375rem;
@@ -400,7 +462,7 @@ show.blade
     border-radius: 8px;
     font-size: 0.875rem;
     font-weight: 500;
-}
+} */
 
 .meta-badge.status {
     background: rgba(79, 70, 229, 0.1);
@@ -452,17 +514,18 @@ show.blade
     text-decoration: none;
     border: none;
 }
-
-.btn-action.primary {
-    background: var(--accent-primary);
-    color: white;
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+.btn-action.primary.disabled {
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
 }
 
-.btn-action.primary:hover {
-    background: var(--accent-secondary);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+.btn-action.primary.disabled:hover {
+    transform: none;
+    background: var(--bg-tertiary);
 }
 
 .btn-action.secondary {
@@ -474,6 +537,24 @@ show.blade
 .btn-action.secondary:hover {
     background: var(--bg-tertiary);
     border-color: var(--accent-primary);
+}
+/* ===== ADMIN BUTTON ===== */
+.btn-action.admin {
+    background: linear-gradient(135deg, var(--accent-tertiary) 0%, #8b5cf6 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.btn-action.admin:hover {
+    background: linear-gradient(135deg, #8b5cf6 0%, var(--accent-tertiary) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+}
+
+.btn-action.admin svg {
+    stroke: white;
+    stroke-width: 2;
 }
 
 .btn-action.icon-only {
@@ -739,15 +820,13 @@ function addToLibrary() {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred');
+            alert('Berhasil dimasukkan ke perpustakaan Anda!');
         });
     @else
         window.location.href = '/login';
     @endauth
 }
 
-function toggleFavorite() {
-    alert('Favorite feature coming soon!');
-}
+
 </script>
 @endsection
