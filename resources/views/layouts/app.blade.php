@@ -382,6 +382,25 @@
                 font-size: 0.75rem;
             }
         }
+
+
+        /* ===== LOGO STYLES ===== */
+.nav-logo-img {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-logo-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* Jika logo terlalu gelap, tambahkan filter */
+    /* filter: brightness(0) invert(1); */
+}
+
     </style>
 </head>
 
@@ -389,11 +408,13 @@
     <!-- Navigation -->
     <nav class="main-nav">
         <div class="nav-container">
-            <a href="/" class="nav-brand">
-                <div class="nav-logo">K</div>
-                <span class="nav-logo-text">KuroReader</span>
-            </a>
-
+<a href="/" class="nav-brand">
+    <!-- Ganti nama file sesuai ekstensi asli Anda -->
+    <img src="{{ asset('images/Logo_KuroReader.png') }}" 
+         alt="KuroReader Logo" 
+         class="nav-logo-img">
+    <span class="nav-logo-text">KuroReader</span>
+</a>
             <div class="nav-links">
                 <a href="/" class="nav-link {{ request()->is('/') ? 'active' : '' }}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
